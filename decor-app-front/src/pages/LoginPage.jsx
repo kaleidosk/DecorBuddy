@@ -36,7 +36,7 @@ function LoginPage() {
       });
   };
 
-  // Función para decodificar un token JWT
+  // decodificar un token JWT
   const parseJwt = (token) => {
     try {
       return JSON.parse(atob(token.split('.')[1]));

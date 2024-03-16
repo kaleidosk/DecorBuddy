@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User.model');
 const mongoose = require('mongoose');
+const fileUploader = require('../config/cloudinary.config');
 
-// GET /user/:Id - Profile page
+// GET /user/:userId - Profile page
 router.get('/:userId', (req, res, next) => {
   const { userId } = req.params;
 
@@ -27,7 +28,7 @@ router.get('/:userId', (req, res, next) => {
 });
 
 // PUT /user/:userId - Edit profile
-router.put('/:userId', (req, res, next) => {
+router.put('/:userId', fileUploader.single('image'), (req, res, next) => {
   const { userId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -35,7 +36,12 @@ router.put('/:userId', (req, res, next) => {
     return;
   }
 
-  User.findByIdAndUpdate(userId, req.body, { new: true })
+  const updatedData = req.body;
+  if (req.file) {
+    updatedData.picture = req.file.path;
+  }
+
+  User.findByIdAndUpdate(userId, updatedData, { new: true })
     .then((updatedUser) => {
       if (!updatedUser) {
         res.status(404).json({ message: "User not found" });
@@ -51,25 +57,27 @@ router.put('/:userId', (req, res, next) => {
 
 // DELETE /user/:userId - Delete profile
 router.delete('/:userId', (req, res, next) => {
-    const { userId } = req.params;
-  
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      res.status(400).json({ message: "Specified id is not valid" });
-      return;
-    }
-  
-    User.findByIdAndRemove(userId)
-      .then((deletedUser) => {
-        if (!deletedUser) {
-          res.status(404).json({ message: "User not found" });
-          return;
-        }
-        res.json({ message: `User with id ${userId} has been deleted successfully` });
-      })
-      .catch((err) => {
-        console.log("Error while deleting the user", err);
-        res.status(500).json({ message: "Error while deleting the user" });
-      });
-  });
-  
+  const { userId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    res.status(400).json({ message: "Specified id is not valid" });
+    return;
+  }
+
+  User.findByIdAndRemove(userId)
+    .then((deletedUser) => {
+      if (!deletedUser) {
+        res.status(404).json({ message: "User not found" });
+        return;
+      }
+      res.json({ message: `User with id ${userId} has been deleted successfully` });
+    })
+    .catch((err) => {
+      console.log("Error while deleting the user", err);
+      res.status(500).json({ message: "Error while deleting the user" });
+    });
+});
+
 module.exports = router;
+
+
