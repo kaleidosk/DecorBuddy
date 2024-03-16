@@ -11,6 +11,14 @@ const cookieParser = require("cookie-parser");
 
 const cors = require("cors"); // <== IMPORT
 
+const FRONTEND_URL =
+process.env.ORIGIN || "http://localhost:5173";
+
+// // Connects the mongo uri to maintain the same naming structure
+// const MONGO_URI =
+//   process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/web-app";
+
+
 // Middleware configuration
 module.exports = (app) => {
   // Because this is a server that will accept requests from outside and it will be hosted ona server with a `proxy`, express needs to know that it should trust that setting.
@@ -19,7 +27,7 @@ module.exports = (app) => {
 
   app.use(
     cors({
-      origin: ["http://localhost:5173"],
+      origin: [FRONTEND_URL],
     })
   );
 
